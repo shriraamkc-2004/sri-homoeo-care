@@ -1,4 +1,2 @@
 allowBuilds:
-  '@openuidev/lang-core': true
   esbuild: true
-  ffmpeg-static: true

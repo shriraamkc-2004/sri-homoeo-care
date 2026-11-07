@@ -90,17 +90,11 @@ export function getPatientAppointments(patientId: string): AppointmentRecord[] {
 
 export function getTodayServingToken(): number {
   const list = getStoredAppointments();
-  const inProgress = list.find((a) => a.stage === 4);
-  if (inProgress) return inProgress.tokenNumber;
-  const stage3 = list.find((a) => a.stage === 3);
-  if (stage3) return stage3.tokenNumber;
-  return 1;
+  return list.find((a) => a.stage === 4)?.tokenNumber ?? list.find((a) => a.stage === 3)?.tokenNumber ?? 1;
 }
 
 export function getNextTokenNumber(dateStr: string): number {
   const forDate = getStoredAppointments().filter((a) => a.date === dateStr);
-  if (forDate.length === 0) return 1;
-  const max = Math.max(...forDate.map((a) => a.tokenNumber));
-  return max + 1;
+  return forDate.length ? Math.max(...forDate.map((a) => a.tokenNumber)) + 1 : 1;
 }
 

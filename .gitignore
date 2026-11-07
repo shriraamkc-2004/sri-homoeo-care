@@ -17,6 +17,7 @@ dist-ssr/
 .nitro/
 .tanstack/
 .vinxi/
+.vercel/
 *.log
 npm-debug.log*
 yarn-debug.log*

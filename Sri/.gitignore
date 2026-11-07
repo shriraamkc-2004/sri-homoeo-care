@@ -13,6 +13,7 @@ dist-ssr
 .vinxi
 .tanstack/**
 .nitro
+.vercel
 *.local
 
 # Environment & Secrets (Security Hardening)

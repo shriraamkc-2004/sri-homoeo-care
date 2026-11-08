@@ -48,7 +48,7 @@
 - **Framework**: TanStack Start v1.168 with React 19
 - **Bundler & Server**: Vite 8
 - **Styling**: Tailwind CSS v4, Lucide React icons, Radix UI primitives
-- **Database**: MySQL 8.0+ / MariaDB via `mysql2/promise` connection pool
+- **Database**: PostgreSQL via `pg` (Voroa-ready)
 - **Testing**: Vitest 4 with React Testing Library (100% pass rate)
 - **Type Checking**: Strict TypeScript (0 errors)
 
@@ -58,7 +58,7 @@
 
 ### Prerequisites
 - Node.js 20+ and `pnpm`
-- MySQL 8.0+ running on `localhost:3306`
+- PostgreSQL running on `localhost:3306`
 
 ### Installation & Run
 

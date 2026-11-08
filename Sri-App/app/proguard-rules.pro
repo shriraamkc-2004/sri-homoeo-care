@@ -34,4 +34,3 @@
 # Keep line numbers and source file names for production crash stack traces
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
-

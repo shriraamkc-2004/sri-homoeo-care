@@ -40,7 +40,7 @@ d:\New Project\
 1. **Web Platform (`Sri`):**
    - React 19 with TanStack Start (v1.168) and Vite 8.
    - Styling: Tailwind CSS v4 with OKLCH tokens, Radix UI accessible primitives, Lucide React icons.
-   - Database Connection: MySQL 8.0+ connection pool via `mysql2/promise`.
+   - Database Connection: PostgreSQL pool via `pg` (Voroa managed Postgres).
    - Client State: Resilient LocalStorage session vault with zero guest leaks.
    - Testing: Vitest 4 with full unit and integration coverage.
 

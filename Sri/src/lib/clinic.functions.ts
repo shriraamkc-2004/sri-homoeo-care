@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { query } from "@/lib/mysql";
+import { query } from "@/lib/postgres";
 import { appointmentSchema, createAppointmentReference } from "@/lib/clinic-booking";
 import { hashPassword, verifyPassword, validatePasswordStrength, isHashedPassword } from "@/lib/security";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -41,7 +41,7 @@ const findProfileSchema = z.object({
 });
 
 /**
- * 1. Get available 15-minute evening slots (6:00 - 8:00 PM IST) from MySQL
+ * 1. Get available 15-minute evening slots (6:00 - 8:00 PM IST) from PostgreSQL
  */
 export const getAvailableClinicSlots = createServerFn({ method: "GET" })
   .validator((input: { date: string }) =>
@@ -56,13 +56,13 @@ export const getAvailableClinicSlots = createServerFn({ method: "GET" })
       const bookedSet = new Set(booked.map((b) => b.slot_time));
       return DEFAULT_EVENING_SLOTS.filter((s) => !bookedSet.has(s));
     } catch (err) {
-      console.warn("[MySQL Slots Fallback]:", err);
+      console.warn("[Postgres Slots Fallback]:", err);
       return DEFAULT_EVENING_SLOTS;
     }
   });
 
 /**
- * 2. Find public appointment status by reference ID (MySQL)
+ * 2. Find public appointment status by reference ID (PostgreSQL)
  */
 export const findPublicAppointmentStatus = createServerFn({ method: "POST" })
   .validator((input: unknown) => findAppointmentSchema.parse(input))
@@ -85,13 +85,13 @@ export const findPublicAppointmentStatus = createServerFn({ method: "POST" })
       );
       return rows[0] ?? null;
     } catch (err) {
-      console.warn("[MySQL Track Fallback]:", err);
+      console.warn("[Postgres Track Fallback]:", err);
       return null;
     }
   });
 
 /**
- * 3. Save or Update patient profile (MySQL with Strix Password Hashing & Audit)
+ * 3. Save or Update patient profile (PostgreSQL with Strix Password Hashing & Audit)
  */
 export const savePatientProfile = createServerFn({ method: "POST" })
   .validator((input: unknown) => profileSchema.parse(input))
@@ -124,11 +124,11 @@ export const savePatientProfile = createServerFn({ method: "POST" })
       await query(
         `INSERT INTO profiles (id, full_name, email, phone, password_hash, role, is_verified, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, TRUE, NOW(), NOW())
-         ON DUPLICATE KEY UPDATE
-           full_name = VALUES(full_name),
-           email = VALUES(email),
-           phone = VALUES(phone),
-           password_hash = COALESCE(VALUES(password_hash), password_hash),
+         ON CONFLICT (id) DO UPDATE SET
+           full_name = EXCLUDED.full_name,
+           email = EXCLUDED.email,
+           phone = EXCLUDED.phone,
+           password_hash = COALESCE(EXCLUDED.password_hash, profiles.password_hash),
            updated_at = NOW()`,
         [data.id, data.fullName, data.email ?? null, data.phone, passwordHash, safeRole]
       );
@@ -142,7 +142,7 @@ export const savePatientProfile = createServerFn({ method: "POST" })
 
       return { ok: true, phone: data.phone };
     } catch (err: unknown) {
-      console.error("[MySQL Profile Error]:", err instanceof Error ? err.message : "error");
+      console.error("[Postgres Profile Error]:", err instanceof Error ? err.message : "error");
       logAuditEvent({
         category: "authentication",
         action: "PROFILE_REGISTER_FAILED",
@@ -154,7 +154,7 @@ export const savePatientProfile = createServerFn({ method: "POST" })
   });
 
 /**
- * 3b. Find Clinic Profile by phone or email (MySQL with Strix Secure Verification)
+ * 3b. Find Clinic Profile by phone or email (PostgreSQL with Strix Secure Verification)
  */
 export const findClinicProfile = createServerFn({ method: "POST" })
   .validator((input: unknown) => findProfileSchema.parse(input))
@@ -243,13 +243,13 @@ export const findClinicProfile = createServerFn({ method: "POST" })
 
       return { profile: null, error: "not_found" as const };
     } catch (err) {
-      console.warn("[MySQL Find Profile Fallback]:", err);
+      console.warn("[Postgres Find Profile Fallback]:", err);
       return { profile: null, error: "error" as const };
     }
   });
 
 /**
- * 4. Create Clinic Appointment (MySQL)
+ * 4. Create Clinic Appointment (PostgreSQL)
  */
 export const createClinicAppointment = createServerFn({ method: "POST" })
   .validator((input: unknown) => createAppointmentInputSchema.parse(input))
@@ -303,7 +303,7 @@ export const createClinicAppointment = createServerFn({ method: "POST" })
         tokenNumber,
       };
     } catch (err: any) {
-      console.error("[MySQL Insert Appt Error]:", err);
+      console.error("[Postgres Insert Appt Error]:", err);
       return {
         referenceId: appointmentReference,
         date: data.appointment_date,
@@ -314,7 +314,7 @@ export const createClinicAppointment = createServerFn({ method: "POST" })
   });
 
 /**
- * 5. Get appointments for a patient (MySQL)
+ * 5. Get appointments for a patient (PostgreSQL)
  */
 export const getPatientAppointments = createServerFn({ method: "GET" })
   .validator((input: { patientId: string }) => z.object({ patientId: z.string() }).parse(input))
@@ -334,13 +334,13 @@ export const getPatientAppointments = createServerFn({ method: "GET" })
       );
       return rows;
     } catch (err) {
-      console.warn("[MySQL Patient Appts Fallback]:", err);
+      console.warn("[Postgres Patient Appts Fallback]:", err);
       return [];
     }
   });
 
 /**
- * 6. Get Staff Queue Appointments (MySQL)
+ * 6. Get Staff Queue Appointments (PostgreSQL)
  */
 export const getClinicStaffAppointments = createServerFn({ method: "GET" })
   .handler(async () => {
@@ -357,13 +357,13 @@ export const getClinicStaffAppointments = createServerFn({ method: "GET" })
       );
       return rows;
     } catch (err) {
-      console.warn("[MySQL Staff Appts Fallback]:", err);
+      console.warn("[Postgres Staff Appts Fallback]:", err);
       return [];
     }
   });
 
 /**
- * 7. Update appointment as Doctor or Staff (MySQL)
+ * 7. Update appointment as Doctor or Staff (PostgreSQL)
  */
 const staffUpdateSchema = z.discriminatedUnion("action", [
   z.object({
@@ -437,7 +437,7 @@ export const updateClinicAppointmentAsStaff = createServerFn({ method: "POST" })
 
       return { ok: true };
     } catch (err: any) {
-      console.error("[MySQL Staff Update Error]:", err);
+      console.error("[Postgres Staff Update Error]:", err);
       return { ok: true };
     }
   });
@@ -488,13 +488,13 @@ export const requestPatientScheduleChange = createServerFn({ method: "POST" })
       }
       return { ok: true, direct: false };
     } catch (err: any) {
-      console.error("[MySQL Schedule Change Error]:", err);
+      console.error("[Postgres Schedule Change Error]:", err);
       return { ok: true, direct: true };
     }
   });
 
 /**
- * 9. Get Patient Digital Prescription (MySQL)
+ * 9. Get Patient Digital Prescription (PostgreSQL)
  */
 export const getPatientPrivatePrescription = createServerFn({ method: "POST" })
   .validator((input: unknown) => z.object({ appointmentId: z.string() }).parse(input))
@@ -523,13 +523,13 @@ export const getPatientPrivatePrescription = createServerFn({ method: "POST" })
 
       return rows[0] ?? null;
     } catch (err) {
-      console.warn("[MySQL Prescription Fallback]:", err);
+      console.warn("[Postgres Prescription Fallback]:", err);
       return null;
     }
   });
 
 /**
- * 10. Get Consultation Notes (MySQL)
+ * 10. Get Consultation Notes (PostgreSQL)
  */
 export const getPatientConsultationNotes = createServerFn({ method: "POST" })
   .validator((input: unknown) => z.object({ appointmentId: z.string() }).parse(input))
@@ -544,7 +544,7 @@ export const getPatientConsultationNotes = createServerFn({ method: "POST" })
       );
       return rows[0] ?? null;
     } catch (err) {
-      console.warn("[MySQL Notes Fallback]:", err);
+      console.warn("[Postgres Notes Fallback]:", err);
       return null;
     }
   });

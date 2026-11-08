@@ -1,14 +1,13 @@
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
-  dialect: "mysql",
+  dialect: "postgresql",
   schema: "./drizzle/schema.ts",
   out: "./drizzle/migrations",
   dbCredentials: {
-    host: process.env.MYSQL_HOST ?? "localhost",
-    port: Number(process.env.MYSQL_PORT ?? 3306),
-    user: process.env.MYSQL_USER ?? "root",
-    password: process.env.MYSQL_PASSWORD ?? "",
-    database: process.env.MYSQL_DATABASE ?? "sri_homoeo_clinic",
+    url:
+      process.env.DATABASE_URL ||
+      process.env.POSTGRES_URL ||
+      "postgresql://postgres:postgres@localhost:5432/sri_homoeo_clinic",
   },
 });

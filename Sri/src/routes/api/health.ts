@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { testMySqlConnection } from "@/lib/mysql";
+import { testDbConnection } from "@/lib/postgres";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const Route = (createFileRoute as any)("/api/health")({
@@ -12,7 +12,7 @@ export const Route = (createFileRoute as any)("/api/health")({
           message: "not_checked",
         };
         try {
-          db = await testMySqlConnection();
+          db = await testDbConnection();
         } catch (error) {
           db = {
             success: false,
@@ -24,6 +24,7 @@ export const Route = (createFileRoute as any)("/api/health")({
           ok: true,
           service: "sri-homoeo-care",
           version: "1.2.0",
+          engine: "postgresql",
           time: new Date().toISOString(),
           uptimeSec: Math.floor(process.uptime()),
           latencyMs: Date.now() - started,
@@ -31,8 +32,6 @@ export const Route = (createFileRoute as any)("/api/health")({
           databaseDetail: db.message,
         };
 
-        // App is considered alive even if DB is down (so process monitors stay green);
-        // status field lets ops distinguish degraded mode.
         const status = db.success ? 200 : 503;
         return new Response(JSON.stringify(body), {
           status,

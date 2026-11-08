@@ -2,7 +2,7 @@ import mysql from "mysql2/promise";
 
 /**
  * Sri Homoeo Care — MySQL connection pool
- * Production requires MYSQL_* or DATABASE_URL. Does not default to root with empty password.
+ * Production requires MYSQL_* or DATABASE_URL. Lazy evaluation ensures SSR doesn't crash on unconfigured cold-start.
  */
 
 export interface MySqlConfig {
@@ -21,7 +21,7 @@ function isProduction(): boolean {
   );
 }
 
-function resolveConfig(): MySqlConfig {
+function resolveConfig(): MySqlConfig | null {
   const host = process.env["MYSQL_HOST"] || process.env["DATABASE_HOST"] || "localhost";
   const port = Number(process.env["MYSQL_PORT"] || process.env["DATABASE_PORT"] || 3306);
   const user = process.env["MYSQL_USER"] || process.env["DATABASE_USER"] || "";
@@ -30,9 +30,7 @@ function resolveConfig(): MySqlConfig {
 
   if (isProduction()) {
     if (!user || password === undefined || password === null) {
-      throw new Error(
-        "[MySQL] Production requires MYSQL_USER and MYSQL_PASSWORD (or DATABASE_URL). Refusing unsafe defaults."
-      );
+      return null;
     }
     if (user === "root") {
       console.warn("[MySQL] Warning: using root in production is discouraged. Prefer a least-privilege app user.");
@@ -48,22 +46,28 @@ function resolveConfig(): MySqlConfig {
   };
 }
 
-const config: MySqlConfig = resolveConfig();
-
 let pool: mysql.Pool | null = null;
 let isConnected = false;
 
 export function getMySqlPool(): mysql.Pool {
   if (!pool) {
     const uri = process.env["DATABASE_URL"] || process.env["MYSQL_URL"];
+    const config = resolveConfig();
+
+    if (!uri && !config) {
+      throw new Error(
+        "[MySQL] Database not configured. Set MYSQL_USER & MYSQL_PASSWORD (or DATABASE_URL) in environment variables."
+      );
+    }
+
     const poolOptions: mysql.PoolOptions = uri
       ? { uri }
       : {
-          host: config.host,
-          port: config.port,
-          user: config.user,
-          password: config.password,
-          database: config.database,
+          host: config!.host,
+          port: config!.port,
+          user: config!.user,
+          password: config!.password,
+          database: config!.database,
         };
 
     poolOptions.waitForConnections = true;
@@ -83,7 +87,8 @@ export function getMySqlPool(): mysql.Pool {
 
 export async function testMySqlConnection(): Promise<{ success: boolean; message: string }> {
   try {
-    await getMySqlPool().query("SELECT 1 AS connected");
+    const p = getMySqlPool();
+    await p.query("SELECT 1 AS connected");
     isConnected = true;
     return { success: true, message: "Connected to MySQL successfully." };
   } catch (error: unknown) {
@@ -95,8 +100,9 @@ export async function testMySqlConnection(): Promise<{ success: boolean; message
 
 export async function query<T = unknown>(sql: string, params: unknown[] = []): Promise<T[]> {
   try {
+    const p = getMySqlPool();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [results] = await getMySqlPool().execute(sql, params as any);
+    const [results] = await p.execute(sql, params as any);
     return results as T[];
   } catch (error) {
     console.error("[MySQL Query Error]:", error instanceof Error ? error.message : "query failed");
@@ -104,4 +110,4 @@ export async function query<T = unknown>(sql: string, params: unknown[] = []): P
   }
 }
 
-export { config as mysqlConfig, isConnected as isMySqlConnected };
+export { isConnected as isMySqlConnected };

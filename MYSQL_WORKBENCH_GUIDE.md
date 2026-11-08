@@ -12,7 +12,7 @@
 ### Step 1: Open MySQL Workbench
 1. Launch **MySQL Workbench** on your PC.
 2. Under **MySQL Connections**, click your local or remote instance (e.g., `Local instance MySQL80` at `localhost:3306`).
-3. Enter your MySQL password (configured in `.env` as `Vkcs0204@`).
+3. Enter your MySQL password (configured in `.env` as `YOUR_MYSQL_PASSWORD`).
 
 ### Step 2: Open and Execute the SQL Script
 1. In the top menu, go to **File** -> **Open SQL Script...** (or press `Ctrl + Shift + O`).
@@ -101,11 +101,12 @@ erDiagram
 Your application `.env` file in [`Sri/.env`](file:///d:/New%20Project/Sri/.env) connects to MySQL:
 
 ```env
-DATABASE_HOST=localhost
-DATABASE_PORT=3306
-DATABASE_USER=root
-DATABASE_PASSWORD=Vkcs0204@
-DATABASE_NAME=sri_homoeo_clinic
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=sri_app_user
+MYSQL_PASSWORD=YOUR_MYSQL_PASSWORD
+MYSQL_DATABASE=sri_homoeo_clinic
+MYSQL_SSL=false
 ```
 
 The database connection is managed via `mysql2/promise` connection pooling in [`Sri/src/lib/mysql.ts`](file:///d:/New%20Project/Sri/src/lib/mysql.ts) and accessed by TanStack Start server functions in [`Sri/src/lib/clinic.functions.ts`](file:///d:/New%20Project/Sri/src/lib/clinic.functions.ts).

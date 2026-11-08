@@ -525,30 +525,34 @@ function ClinicPage() {
     toast.info(locale === "ta" ? "வெளியேறிவிட்டீர்கள்." : "Signed out.");
   }
 
+  function triggerDownload(url: string, filename: string) {
+    try {
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      anchor.rel = "noopener";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    } catch {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  }
+
   function downloadApk() {
-    const anchor = document.createElement("a");
-    anchor.href = "/downloads/homoeo-care.apk";
-    anchor.download = "homoeo-care.apk";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
+    triggerDownload("/downloads/homoeo-care.apk", "homoeo-care.apk");
     toast.success(
       locale === "ta"
-        ? "ஸ்ரீ ஹோமியோபதி கேர் Android APK பதிவிறக்கம் தொடங்குகிறது (~16.9 MB)..."
+        ? "ஸ்ரீ ஹோமியோ கேர் Android APK பதிவிறக்கம் தொடங்குகிறது (~16.9 MB)..."
         : "Downloading Sri Homoeo Care Android APK (~16.9 MB)..."
     );
   }
 
   function downloadLaptopApp() {
-    const anchor = document.createElement("a");
-    anchor.href = "/downloads/homoeo-care-windows.exe";
-    anchor.download = "homoeo-care-windows.exe";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
+    triggerDownload("/downloads/homoeo-care-windows.exe", "homoeo-care-windows.exe");
     toast.success(
       locale === "ta"
-        ? "ஸ்ரீ ஹோமியோபதி கேர் Windows செயலி பதிவிறக்கம் தொடங்குகிறது (.exe)..."
+        ? "ஸ்ரீ ஹோமியோ கேர் Windows செயலி பதிவிறக்கம் தொடங்குகிறது (.exe)..."
         : "Downloading Sri Homoeo Care Windows Laptop App (.exe)..."
     );
   }

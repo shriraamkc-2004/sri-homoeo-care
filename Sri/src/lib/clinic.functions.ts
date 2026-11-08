@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { query } from "@/lib/mysql";
 import { appointmentSchema, createAppointmentReference } from "@/lib/clinic-booking";
-import { hashPassword, verifyPassword } from "@/lib/security";
+import { hashPassword, verifyPassword, validatePasswordStrength, isHashedPassword } from "@/lib/security";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { logAuditEvent } from "@/lib/audit-logger";
 
 const DEFAULT_EVENING_SLOTS = [
@@ -30,13 +31,13 @@ const profileSchema = z.object({
   fullName: z.string().trim().min(1).max(100),
   phone: z.string().trim().max(32),
   email: z.string().trim().email().optional(),
-  password: z.string().optional(),
+  password: z.string().min(8).max(128).optional(),
   role: z.enum(["patient", "doctor", "member", "admin"]).default("patient"),
 });
 
 const findProfileSchema = z.object({
-  identifier: z.string().trim().min(3),
-  password: z.string().optional(),
+  identifier: z.string().trim().min(3).max(255),
+  password: z.string().min(1).max(128),
 });
 
 /**
@@ -95,8 +96,31 @@ export const findPublicAppointmentStatus = createServerFn({ method: "POST" })
 export const savePatientProfile = createServerFn({ method: "POST" })
   .validator((input: unknown) => profileSchema.parse(input))
   .handler(async ({ data }) => {
+    const rateKey = `register:${(data.phone || data.email || data.id).toLowerCase()}`;
+    const rate = checkRateLimit(rateKey, 5, 15 * 60 * 1000);
+    if (!rate.allowed) {
+      logAuditEvent({
+        category: "authentication",
+        action: "REGISTER_RATE_LIMITED",
+        actor: { identifier: data.phone },
+        status: "denied",
+        details: { retryAfterSec: rate.retryAfterSec },
+      });
+      return { ok: false, error: "rate_limited" as const, retryAfterSec: rate.retryAfterSec };
+    }
+
+    // Patients may self-register only; staff roles must not be self-assigned from client
+    const safeRole = data.role === "patient" ? "patient" : "patient";
+    if (!data.password) {
+      return { ok: false, error: "password_required" as const };
+    }
+    const strength = validatePasswordStrength(data.password);
+    if (!strength.ok) {
+      return { ok: false, error: "weak_password" as const, message: strength.message };
+    }
+
     try {
-      const passwordHash = data.password ? hashPassword(data.password) : null;
+      const passwordHash = hashPassword(data.password);
       await query(
         `INSERT INTO profiles (id, full_name, email, phone, password_hash, role, is_verified, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, TRUE, NOW(), NOW())
@@ -106,20 +130,26 @@ export const savePatientProfile = createServerFn({ method: "POST" })
            phone = VALUES(phone),
            password_hash = COALESCE(VALUES(password_hash), password_hash),
            updated_at = NOW()`,
-        [data.id, data.fullName, data.email ?? null, data.phone, passwordHash, data.role]
+        [data.id, data.fullName, data.email ?? null, data.phone, passwordHash, safeRole]
       );
 
       logAuditEvent({
         category: "authentication",
         action: "PROFILE_REGISTERED",
-        actor: { id: data.id, role: data.role, identifier: data.phone },
+        actor: { id: data.id, role: safeRole, identifier: data.phone },
         status: "success",
       });
 
       return { ok: true, phone: data.phone };
-    } catch (err: any) {
-      console.error("[MySQL Profile Error]:", err);
-      return { ok: true, phone: data.phone };
+    } catch (err: unknown) {
+      console.error("[MySQL Profile Error]:", err instanceof Error ? err.message : "error");
+      logAuditEvent({
+        category: "authentication",
+        action: "PROFILE_REGISTER_FAILED",
+        actor: { identifier: data.phone },
+        status: "failure",
+      });
+      return { ok: false, error: "server_error" as const };
     }
   });
 
@@ -131,6 +161,22 @@ export const findClinicProfile = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const cleanId = data.identifier.trim().toLowerCase();
+      const rate = checkRateLimit(`login:${cleanId}`, 10, 15 * 60 * 1000);
+      if (!rate.allowed) {
+        logAuditEvent({
+          category: "authentication",
+          action: "LOGIN_RATE_LIMITED",
+          actor: { identifier: cleanId },
+          status: "denied",
+          details: { retryAfterSec: rate.retryAfterSec },
+        });
+        return { profile: null, error: "rate_limited" as const, retryAfterSec: rate.retryAfterSec };
+      }
+
+      if (!data.password) {
+        return { profile: null, error: "password_required" as const };
+      }
+
       const digits = cleanId.replace(/\D/g, "");
       const cleanDigits = digits.slice(-10);
 
@@ -145,18 +191,26 @@ export const findClinicProfile = createServerFn({ method: "POST" })
 
       if (rows && rows.length > 0) {
         const row = rows[0];
-        if (data.password && row.password_hash) {
-          const isValid = verifyPassword(data.password, row.password_hash);
-          if (!isValid) {
-            logAuditEvent({
-              category: "authentication",
-              action: "LOGIN_FAILED",
-              actor: { identifier: cleanId },
-              status: "failure",
-              details: { reason: "invalid_password" },
-            });
-            return { profile: null, error: "invalid_password" as const };
-          }
+        if (!row.password_hash || !isHashedPassword(row.password_hash)) {
+          logAuditEvent({
+            category: "authentication",
+            action: "LOGIN_FAILED",
+            actor: { identifier: cleanId },
+            status: "failure",
+            details: { reason: "password_not_set" },
+          });
+          return { profile: null, error: "password_not_set" as const };
+        }
+        const isValid = verifyPassword(data.password, row.password_hash);
+        if (!isValid) {
+          logAuditEvent({
+            category: "authentication",
+            action: "LOGIN_FAILED",
+            actor: { identifier: cleanId },
+            status: "failure",
+            details: { reason: "invalid_password" },
+          });
+          return { profile: null, error: "invalid_password" as const };
         }
 
         logAuditEvent({
@@ -346,6 +400,7 @@ export const updateClinicAppointmentAsStaff = createServerFn({ method: "POST" })
         logAuditEvent({
           category: "clinical_record",
           action: "APPOINTMENT_RESCHEDULED",
+          actor: { identifier: "staff" },
           resource: { type: "appointment", id: data.appointmentId },
           status: "success",
           details: { date: data.date, time: data.time },
@@ -374,6 +429,7 @@ export const updateClinicAppointmentAsStaff = createServerFn({ method: "POST" })
       logAuditEvent({
         category: "clinical_record",
         action: "APPOINTMENT_STATUS_UPDATED",
+        actor: { identifier: "staff" },
         resource: { type: "appointment", id: data.appointmentId },
         status: "success",
         details: { status: data.status, stage },
@@ -409,6 +465,7 @@ export const requestPatientScheduleChange = createServerFn({ method: "POST" })
         logAuditEvent({
           category: "clinical_record",
           action: "APPOINTMENT_CANCELLED_BY_PATIENT",
+          actor: { identifier: "patient" },
           resource: { type: "appointment", id: data.appointmentId },
           status: "success",
         });
@@ -422,6 +479,7 @@ export const requestPatientScheduleChange = createServerFn({ method: "POST" })
         logAuditEvent({
           category: "clinical_record",
           action: "APPOINTMENT_RESCHEDULED_BY_PATIENT",
+          actor: { identifier: "patient" },
           resource: { type: "appointment", id: data.appointmentId },
           status: "success",
           details: { date: data.date, time: data.time },
@@ -457,6 +515,7 @@ export const getPatientPrivatePrescription = createServerFn({ method: "POST" })
         logAuditEvent({
           category: "prescription",
           action: "PRESCRIPTION_VIEWED",
+          actor: { identifier: "patient" },
           resource: { type: "appointment", id: data.appointmentId },
           status: "success",
         });

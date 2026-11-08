@@ -8,6 +8,24 @@ export const INITIAL_TEAM_USERS: ClinicUser[] = [];
 
 const DEMO_USER_IDS = new Set(["user-admin", "user-doctor", "user-member", "patient-demo"]);
 
+/** Never persist secrets or unexpected credential fields in localStorage. */
+function sanitizeUserForStorage(user: ClinicUser): ClinicUser {
+  const sanitized: ClinicUser = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    isVerified: user.isVerified,
+    createdAt: user.createdAt,
+  };
+  if (user.age !== undefined) sanitized.age = user.age;
+  if (user.gender !== undefined) sanitized.gender = user.gender;
+  if (user.city !== undefined) sanitized.city = user.city;
+  return sanitized;
+}
+
+
 export function getStoredUsers(): ClinicUser[] {
   if (typeof window === "undefined") return [];
   try {
@@ -29,7 +47,7 @@ export function getStoredUsers(): ClinicUser[] {
 export function saveUser(user: ClinicUser) {
   if (typeof window === "undefined") return;
   const users = getStoredUsers().filter((u) => u.id !== user.id && u.phone !== user.phone && u.email !== user.email);
-  users.push(user);
+  users.push(sanitizeUserForStorage(user));
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
 }
 
@@ -54,7 +72,7 @@ export function setActiveUser(user: ClinicUser | null) {
   if (!user || DEMO_USER_IDS.has(user.id)) {
     localStorage.removeItem(ACTIVE_USER_KEY);
   } else {
-    localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(user));
+    localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(sanitizeUserForStorage(user)));
   }
 }
 

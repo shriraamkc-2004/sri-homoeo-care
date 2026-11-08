@@ -27,7 +27,7 @@ namespace SriHomoeoCare
                 else if (File.Exists(chromePath)) browserExe = chromePath;
                 else if (File.Exists(chromePathUser)) browserExe = chromePathUser;
 
-                string targetUrl = "http://localhost:5173/?portal=true";
+                string targetUrl = "https://srihomoeocare.onvoroa.com/?portal=true";
                 string appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SriHomoeoCareProfile");
 
                 if (!Directory.Exists(appDataDir))

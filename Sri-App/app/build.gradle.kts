@@ -17,8 +17,11 @@ android {
 
   buildTypes {
     release {
-      isMinifyEnabled = false
+      isMinifyEnabled = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+    }
+    debug {
+      isMinifyEnabled = false
     }
   }
 
@@ -40,6 +43,10 @@ android {
 }
 
 dependencies {
+  // Firebase Auth (Phone OTP) — enable after adding google-services.json
+  // implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
+  // implementation("com.google.firebase:firebase-auth")
+
   val composeBom = platform(libs.androidx.compose.bom)
   implementation(composeBom)
 

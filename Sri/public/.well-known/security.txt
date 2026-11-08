@@ -1,0 +1,4 @@
+Contact: mailto:admin@srihomoeoclinic.com
+Preferred-Languages: en, ta
+Canonical: https://srihomoeocare.onvoroa.com/.well-known/security.txt
+Policy: https://srihomoeocare.onvoroa.com/#privacy

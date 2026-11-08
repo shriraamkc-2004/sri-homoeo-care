@@ -1,0 +1,36 @@
+Sri Homoeo Care — Complete Project (Assembled)
+==============================================
+Date: 2026-11-08
+
+Parts merged from user uploads:
+  - PROJECT_ARCHITECTURE.md
+  - MYSQL_WORKBENCH_GUIDE.md
+  - sri_homoeo_clinic_schema.sql
+  - Sri.zip (web + desktop source)
+  - Sri-App.zip (Android)
+  - dist.zip (APK / EXE / web builds)
+  - .vscode.zip (editor config; optional)
+
+Layout:
+  SriHomoeoCare-Full/
+    PROJECT_ARCHITECTURE.md
+    MYSQL_WORKBENCH_GUIDE.md
+    sri_homoeo_clinic_schema.sql
+    ASSEMBLY_NOTES.txt
+    Sri/           TanStack Start web app + C# desktop source
+    Sri-App/       Android Jetpack Compose
+    dist/
+      android/homoeo-care.apk
+      windows/homoeo-care.exe
+      windows/homoeo-care-setup.exe
+      web/
+
+SECURITY:
+  - Rotate any DB password that appeared in MYSQL_WORKBENCH_GUIDE.md
+  - Do not commit real .env files
+  - Prefer env vars on the host (Onvoroa / Cloudflare)
+
+Verified:
+  - clinic-experience.tsx, auth-gate, portals present
+  - MainActivity.kt present
+  - APK + EXE present under dist/

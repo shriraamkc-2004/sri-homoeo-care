@@ -18,7 +18,12 @@
     "pm2:reload": "pm2 reload ecosystem.config.cjs",
     "pm2:stop": "pm2 stop sri-homoeo-care",
     "pm2:logs": "pm2 logs sri-homoeo-care",
-    "health": "node -e \"fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>r.json()).then(console.log).catch(e=>{console.error(e);process.exit(1)})\""
+    "health": "node -e \"fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>r.json()).then(console.log).catch(e=>{console.error(e);process.exit(1)})\"",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "lighthouse": "node -e \"console.log('Run: npx lighthouse http://127.0.0.1:3000 --view --only-categories=performance,accessibility,best-practices --quiet')\"",
+    "analyze:bundle": "node -e \"console.log('After build, check .output sizes or use: npx vite-bundle-visualizer')\""
   },
   "overrides": {
     "rolldown": "1.2.1"

@@ -1023,3 +1023,23 @@ html {
 .bg-gold\/10 {
   background-color: oklch(0.82 0.12 85 / 0.1);
 }
+
+
+/* --- Enhancement layer: motion + performance-friendly animations --- */
+@keyframes fade-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-rise {
+  animation: fade-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.magnetic-surface:hover {
+  transform: translateY(-2px) scale(1.01);
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-rise,
+  .magnetic-surface:hover {
+    animation: none !important;
+    transform: none !important;
+  }
+}

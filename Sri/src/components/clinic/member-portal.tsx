@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import {
   UserPlus, Truck, Clock3, CheckCircle2, Phone,
-  Mail, MapPin, KeyRound, Copy, CalendarDays, Check
+  Mail, MapPin, KeyRound, Copy, CalendarDays, Check, Sparkles, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -142,25 +142,27 @@ export function MemberPortal({ locale }: MemberPortalProps) {
   );
 
   return (
-    <div className="space-y-6 animate-fade-up">
+    <div className="space-y-7 animate-fade-up">
       {/* Member Header */}
-      <Card className="p-5 glass rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 depth-2">
+      <Card className="glass-card-premium rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="font-display text-lg font-bold text-foreground">Care Operations Member</h2>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">
-              Operations Desk
+          <div className="flex items-center gap-2.5">
+            <h2 className="font-display text-xl font-bold text-foreground">Care Operations Desk</h2>
+            <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 font-semibold">
+              Staff Portal
             </span>
           </div>
-          <p className="text-xs text-primary font-medium">Patient Onboarding & Medicine Dispatch Management</p>
+          <p className="text-xs text-primary font-medium mt-0.5">
+            Patient Assisted Onboarding & Medicine Dispatch Management
+          </p>
         </div>
 
-        <div className="flex gap-2 p-1 rounded-xl liquid-glass">
+        <div className="flex gap-2 p-1.5 rounded-2xl glass-card-premium border-white/10 shadow-sm">
           <Button
             size="sm"
             onClick={() => setActiveTab("onboard")}
-            variant={activeTab === "onboard" ? "default" : "ghost"}
-            className="text-xs"
+            variant={activeTab === "onboard" ? "shimmer" : "ghost"}
+            className="text-xs rounded-xl h-9"
           >
             <UserPlus className="w-3.5 h-3.5 mr-1.5" />
             {isTa ? "நோயாளி சேர்க்க" : "Add Patient"}
@@ -168,13 +170,13 @@ export function MemberPortal({ locale }: MemberPortalProps) {
           <Button
             size="sm"
             onClick={() => setActiveTab("courier")}
-            variant={activeTab === "courier" ? "gold" : "ghost"}
-            className="text-xs"
+            variant={activeTab === "courier" ? "shimmer" : "ghost"}
+            className="text-xs rounded-xl h-9"
           >
             <Truck className="w-3.5 h-3.5 mr-1.5" />
             {isTa ? "கொரியர்" : "Dispatch"}
             {courierRequests.length > 0 && (
-              <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-[oklch(0.82_0.12_85)] text-[oklch(0.18_0.03_75)] text-[10px] font-bold">
+              <span className="ml-1.5 px-2 py-0.5 rounded-full bg-gold/25 text-gold border border-gold/30 text-[10px] font-bold">
                 {courierRequests.length}
               </span>
             )}
@@ -186,13 +188,13 @@ export function MemberPortal({ locale }: MemberPortalProps) {
       {/* TAB 1: ADD PATIENT & CREATE LOGIN */}
       {/* ======================================================== */}
       {activeTab === "onboard" && (
-        <Card className="p-6 glass rounded-2xl max-w-2xl mx-auto space-y-5 depth-1">
+        <Card className="glass-card-premium rounded-3xl p-6 sm:p-8 max-w-2xl mx-auto space-y-6 border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] animate-fade-rise">
           <div>
-            <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2">
-              <UserPlus className="w-4 h-4 text-primary" />
+            <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-primary" />
               {isTa ? "புதிய நோயாளியைப் பதிவு செய்து கணக்கு உருவாக்குதல்" : "Onboard Patient & Generate Login"}
             </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
               {isTa
                 ? "தொலைபேசி மூலம் தொடர்பு கொள்ளும் நோயாளிகளுக்கு உறுப்பினர் மூலம் கணக்கு உருவாக்கும் வசதி."
                 : "Create login credentials for patients calling in, and optionally book their evening slot directly."}
@@ -201,18 +203,18 @@ export function MemberPortal({ locale }: MemberPortalProps) {
 
           <form onSubmit={handleRegisterPatient} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Patient Full Name *</Label>
                 <Input
                   required
                   value={patientName}
                   onChange={(e) => setPatientName(e.target.value)}
                   placeholder="e.g. Meenakshi Sundaram"
-                  className="bg-secondary/80 border-border text-foreground h-9 text-xs"
+                  className="rounded-xl h-10 text-xs"
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Mobile Number (+91) *</Label>
                 <Input
                   type="tel"
@@ -220,36 +222,36 @@ export function MemberPortal({ locale }: MemberPortalProps) {
                   value={patientPhone}
                   onChange={(e) => setPatientPhone(e.target.value)}
                   placeholder="98765 43210"
-                  className="bg-secondary/80 border-border text-foreground h-9 text-xs"
+                  className="rounded-xl h-10 text-xs"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="space-y-1 sm:col-span-1">
+              <div className="space-y-1.5 sm:col-span-1">
                 <Label className="text-xs text-muted-foreground">Email Address (Optional)</Label>
                 <Input
                   type="email"
                   value={patientEmail}
                   onChange={(e) => setPatientEmail(e.target.value)}
                   placeholder="patient@example.com"
-                  className="bg-secondary/80 border-border text-foreground h-9 text-xs"
+                  className="rounded-xl h-10 text-xs"
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Age & Gender</Label>
                 <div className="flex gap-2">
                   <Input
                     type="number"
                     value={patientAge}
                     onChange={(e) => setPatientAge(e.target.value)}
-                    className="w-16 bg-secondary/80 border-border text-foreground h-9 text-xs"
+                    className="w-16 rounded-xl h-10 text-xs"
                   />
                   <select
                     value={patientGender}
                     onChange={(e) => setPatientGender(e.target.value as any)}
-                    className="flex-1 bg-secondary/80 border border-border rounded-md text-foreground h-9 text-xs px-2"
+                    className="flex-1 bg-background/80 border border-border/80 rounded-xl text-foreground h-10 text-xs px-2.5 focus:outline-none focus:border-primary"
                   >
                     <option value="female">Female</option>
                     <option value="male">Male</option>
@@ -259,38 +261,40 @@ export function MemberPortal({ locale }: MemberPortalProps) {
                 </div>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Initial Password</Label>
                 <Input
                   value={patientPassword}
                   onChange={(e) => setPatientPassword(e.target.value)}
-                  className="bg-secondary/80 border-border text-foreground h-9 text-xs font-mono"
+                  className="rounded-xl h-10 text-xs font-mono"
                 />
               </div>
             </div>
 
             {/* Immediate Booking Option */}
-            <div className="p-3.5 rounded-xl border border-border bg-secondary/60 space-y-3">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-foreground">
+            <div className="p-4 rounded-2xl border border-white/10 bg-background/60 space-y-3">
+              <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-foreground">
                 <input
                   type="checkbox"
                   checked={bookAppointmentNow}
                   onChange={(e) => setBookAppointmentNow(e.target.checked)}
-                  className="accent-blue-500 rounded"
+                  className="accent-primary rounded h-4 w-4"
                 />
                 Book Evening Consultation Now (Today 6:00 – 8:00 PM IST)
               </label>
 
               {bookAppointmentNow && (
-                <div className="space-y-2 pt-1 border-t border-border">
-                  <div className="grid grid-cols-4 gap-1.5">
+                <div className="space-y-3 pt-2 border-t border-white/10">
+                  <div className="grid grid-cols-4 gap-2">
                     {slots.map((s) => (
                       <button
                         type="button"
                         key={s}
                         onClick={() => setSelectedSlot(s)}
-                        className={`py-1.5 text-xs rounded border ${
-                          selectedSlot === s ? "border-primary/30 bg-primary/15 text-foreground font-bold" : "border-border bg-secondary/80 text-muted-foreground"
+                        className={`py-2 text-xs rounded-xl border transition ${
+                          selectedSlot === s
+                            ? "border-primary bg-primary text-primary-foreground font-bold shadow-md shadow-primary/20"
+                            : "border-border/60 bg-background/60 text-muted-foreground hover:border-primary/40"
                         }`}
                       >
                         {formatIstTime(s)}
@@ -302,16 +306,22 @@ export function MemberPortal({ locale }: MemberPortalProps) {
                     value={symptoms}
                     onChange={(e) => setSymptoms(e.target.value)}
                     placeholder={isTa ? "பிரதான அறிகுறிகள் / குறைபாடு (விருப்பம்)" : "Chief symptoms / medical concern (Optional)"}
-                    className="bg-secondary/80 border-border text-foreground h-8 text-xs mt-2"
+                    className="rounded-xl h-9 text-xs"
                   />
-                  <div className="text-[11px] text-[oklch(0.82_0.12_85)] font-mono">
+                  <div className="text-[11px] text-gold font-mono flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-gold" />
                     Token will be automatically assigned for evening care session.
                   </div>
                 </div>
               )}
             </div>
 
-            <Button type="submit" className="w-full h-11 bg-primary/15 hover:bg-primary/15 text-foreground font-bold text-sm">
+            <Button
+              type="submit"
+              variant="shimmer"
+              size="lg"
+              className="w-full h-12 rounded-2xl font-bold text-sm"
+            >
               <UserPlus className="w-4 h-4 mr-2" />
               {isTa ? "நோயாளியைப் பதிவு செய்து கணக்கு தொடங்கு" : "Create Patient Account & Generate Login"}
             </Button>
@@ -326,14 +336,16 @@ export function MemberPortal({ locale }: MemberPortalProps) {
         <div className="space-y-4 max-w-3xl mx-auto">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Truck className="w-4 h-4 text-[oklch(0.82_0.12_85)]" />
+              <Truck className="w-4 h-4 text-gold" />
               {isTa ? "மருந்து பார்சல் அனுப்பும் பிரிவு (Option C)" : "Care Courier Dispatch Desk (Option C Delivery)"}
             </h3>
-            <span className="text-xs text-muted-foreground">{courierRequests.length} Courier Orders</span>
+            <span className="text-xs font-mono text-muted-foreground px-3 py-1 rounded-full bg-background/50 border border-border/50">
+              {courierRequests.length} Courier Orders
+            </span>
           </div>
 
           {courierRequests.length === 0 ? (
-            <Card className="p-8 border-border bg-card text-center text-muted-foreground text-xs rounded-xl">
+            <Card className="glass-card-premium p-10 text-center text-muted-foreground text-xs rounded-3xl border-white/10">
               No pending care courier requests. (Patients who choose Option C will appear here).
             </Card>
           ) : (
@@ -344,30 +356,30 @@ export function MemberPortal({ locale }: MemberPortalProps) {
               };
 
               return (
-                <Card key={apt.id} className="p-5 border-border bg-card rounded-xl space-y-3">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border pb-3 gap-2">
+                <Card key={apt.id} className="glass-card-premium rounded-3xl p-6 space-y-4 border-white/10 card-3d">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-white/10 pb-3 gap-2">
                     <div>
-                      <span className="text-xs font-bold text-foreground">{apt.patientName}</span>
+                      <span className="text-sm font-bold text-foreground">{apt.patientName}</span>
                       <span className="text-xs text-muted-foreground ml-2">{apt.patientPhone}</span>
-                      <div className="text-[11px] text-[oklch(0.82_0.12_85)] font-mono">Ref: {apt.referenceId}</div>
+                      <div className="text-[11px] text-gold font-mono mt-0.5">Ref: {apt.referenceId}</div>
                     </div>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-950 text-[oklch(0.82_0.12_85)] border border-amber-800 font-mono">
+                    <span className="text-xs px-3 py-1 rounded-full bg-gold/15 text-gold border border-gold/30 font-mono font-bold">
                       Remedies Prescribed by Dr. Sriindhuja C
                     </span>
                   </div>
 
                   {/* Shipping Address */}
-                  <div className="p-3 rounded-lg border border-border bg-secondary/80 text-xs text-muted-foreground">
-                    <strong className="text-muted-foreground flex items-center gap-1.5 mb-1">
-                      <MapPin className="w-3.5 h-3.5 text-red-400" /> Delivery Address:
+                  <div className="p-3.5 rounded-2xl border border-white/10 bg-background/60 text-xs text-foreground">
+                    <strong className="text-primary flex items-center gap-1.5 mb-1">
+                      <MapPin className="w-4 h-4 text-primary" /> Delivery Address:
                     </strong>
                     {apt.prescription?.shippingAddress || "Address provided during checkout"}
                   </div>
 
                   {/* Medicines to Pack */}
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <strong>Remedies to Pack:</strong>
-                    <ul className="list-disc list-inside text-primary">
+                  <div className="text-xs space-y-1">
+                    <strong className="text-muted-foreground uppercase tracking-wider text-[11px]">Remedies to Pack:</strong>
+                    <ul className="list-disc list-inside text-primary font-medium pl-1">
                       {apt.prescription?.medicines.map((m) => (
                         <li key={m.id}>
                           {m.name} {m.potency} ({m.dosage})
@@ -377,7 +389,7 @@ export function MemberPortal({ locale }: MemberPortalProps) {
                   </div>
 
                   {/* Tracking Input */}
-                  <div className="pt-2 border-t border-border flex flex-col sm:flex-row items-center gap-2">
+                  <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-center gap-3">
                     <Input
                       value={currentInput.provider}
                       onChange={(e) =>
@@ -387,7 +399,7 @@ export function MemberPortal({ locale }: MemberPortalProps) {
                         }))
                       }
                       placeholder="Courier (e.g. India Post / DTDC)"
-                      className="bg-secondary/80 border-border h-8 text-xs text-foreground sm:w-1/3"
+                      className="h-10 text-xs rounded-xl sm:w-1/3"
                     />
                     <Input
                       value={currentInput.trackingNum}
@@ -398,12 +410,13 @@ export function MemberPortal({ locale }: MemberPortalProps) {
                         }))
                       }
                       placeholder="Enter Consignment / Tracking No."
-                      className="bg-secondary/80 border-border h-8 text-xs text-foreground font-mono flex-1"
+                      className="h-10 text-xs rounded-xl font-mono flex-1"
                     />
                     <Button
                       size="sm"
+                      variant="shimmer"
                       onClick={() => handleSaveCourierTracking(apt.id)}
-                      className="bg-[oklch(0.82_0.12_85)] text-[oklch(0.18_0.03_75)] font-semibold"
+                      className="rounded-xl text-xs h-10 px-4 font-bold shrink-0"
                     >
                       <Check className="w-3.5 h-3.5 mr-1" /> Update Tracking
                     </Button>
@@ -417,4 +430,3 @@ export function MemberPortal({ locale }: MemberPortalProps) {
     </div>
   );
 }
-

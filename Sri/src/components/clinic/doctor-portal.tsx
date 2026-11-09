@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import {
   Stethoscope, Phone, Clock3, CheckCircle2, User,
-  Plus, FileText, Check, AlertCircle, ChevronRight, MessageSquare
+  Plus, FileText, Check, AlertCircle, ChevronRight, MessageSquare, Sparkles, Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -146,52 +146,56 @@ export function DoctorPortal({ locale }: DoctorPortalProps) {
   }
 
   return (
-    <div className="space-y-6 animate-fade-up">
+    <div className="space-y-7 animate-fade-up">
       {/* Doctor Header Banner */}
-      <Card className="p-5 glass rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 depth-2">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-full border-2 border-[oklch(0.82_0.12_85)]/50 bg-white p-1 flex items-center justify-center shrink-0 glow-gold">
+      <Card className="glass-card-premium rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl border-2 border-gold/40 bg-white p-1.5 flex items-center justify-center shrink-0 shadow-lg shadow-gold/15">
             <img src="/sri-homeo-care-logo.png" alt="Sri Homoeo Care" className="w-full h-full object-contain" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-display text-lg font-bold text-foreground">Dr. Sriindhuja C</h2>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">
-                Reg. No: 5397
+            <div className="flex items-center gap-2.5">
+              <h2 className="font-display text-xl font-bold text-foreground">Dr. Sriindhuja C</h2>
+              <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 font-semibold">
+                Reg. 5397
               </span>
             </div>
-            <p className="text-xs text-primary font-medium">Doctor Clinical Queue (6:00 – 8:00 p.m. IST)</p>
+            <p className="text-xs text-primary font-medium mt-0.5">
+              Doctor Clinical Desk · Evening Consultations (6:00 – 8:00 p.m. IST)
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs">
-          <div className="px-3.5 py-2 rounded-xl liquid-glass text-center min-w-[72px]">
-            <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Scheduled</div>
+        <div className="flex items-center gap-3 text-xs w-full sm:w-auto justify-start sm:justify-end">
+          <div className="px-4 py-2.5 rounded-2xl glass-card-premium border-white/10 text-center min-w-[80px]">
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Scheduled</div>
             <div className="font-display text-xl font-bold text-foreground">{todayAppointments.length}</div>
           </div>
-          <div className="px-3.5 py-2 rounded-xl liquid-glass text-center min-w-[72px]">
-            <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Completed</div>
+          <div className="px-4 py-2.5 rounded-2xl glass-card-premium border-white/10 text-center min-w-[80px]">
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Completed</div>
             <div className="font-display text-xl font-bold text-primary">{completedCount}</div>
           </div>
-          <div className="px-3.5 py-2 rounded-xl liquid-glass text-center min-w-[72px]">
-            <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Fees</div>
-            <div className="font-display text-xl font-bold text-[oklch(0.82_0.12_85)] font-mono">₹{todayAppointments.length * 100}</div>
+          <div className="px-4 py-2.5 rounded-2xl glass-card-premium border-white/10 text-center min-w-[80px]">
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Fees</div>
+            <div className="font-display text-xl font-bold text-gold font-mono">₹{todayAppointments.length * 100}</div>
           </div>
         </div>
       </Card>
 
       {/* Patient Queue Cards */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
+          <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2">
             <Clock3 className="w-4 h-4 text-primary" />
             {isTa ? "இன்றைய மாலை ஆலோசனை வரிசை (6:00 – 8:00 PM)" : "Evening Care Queue (6:00 – 8:00 p.m. IST)"}
           </h3>
-          <span className="text-xs text-muted-foreground">{todayAppointments.length} Patients Booked</span>
+          <span className="text-xs font-mono text-muted-foreground px-3 py-1 rounded-full bg-background/50 border border-border/50">
+            {todayAppointments.length} Patients Booked
+          </span>
         </div>
 
         {todayAppointments.length === 0 ? (
-          <Card className="p-8 glass text-center text-muted-foreground text-sm rounded-2xl">
+          <Card className="glass-card-premium p-10 text-center text-muted-foreground text-sm rounded-3xl border-white/10">
             No consultations booked yet for this evening.
           </Card>
         ) : (
@@ -203,38 +207,44 @@ export function DoctorPortal({ locale }: DoctorPortalProps) {
             return (
               <Card
                 key={apt.id}
-                className={`p-4 transition rounded-xl lift ${
+                className={`p-5 md:p-6 transition-all duration-300 rounded-3xl card-3d ${
                   isInCall
-                    ? "border-primary/50 bg-primary/10 glow-primary"
+                    ? "border-primary/60 bg-primary/10 shadow-[0_0_30px_rgba(38,198,166,0.2)]"
                     : isCalled
-                    ? "border-[oklch(0.82_0.12_85)]/40 bg-[oklch(0.82_0.12_85)]/10"
-                    : "glass"
+                    ? "border-gold/50 bg-gold/10 shadow-[0_0_25px_rgba(242,185,13,0.15)]"
+                    : "glass-card-premium border-white/10"
                 }`}
               >
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
                   {/* Left: Patient Info & Symptoms */}
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-black font-mono px-2 py-0.5 rounded bg-primary text-primary-foreground">
+                  <div className="space-y-1.5 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-black font-mono px-2.5 py-0.5 rounded-lg bg-primary text-primary-foreground shadow-sm">
                         Token #{apt.tokenNumber}
                       </span>
                       <span className="text-xs text-muted-foreground font-mono">
                         {apt.date} · {formatIstTime(apt.slotTime)}
                       </span>
-                      <span className="text-[10px] font-mono text-primary px-2 py-0.5 rounded bg-primary/10 border border-primary/30">
-                        Confirmed Appointment
+                      <span className="text-[10px] font-mono text-primary px-2 py-0.5 rounded-md bg-primary/10 border border-primary/25">
+                        {apt.referenceId}
                       </span>
+                      {isInCall && (
+                        <span className="text-[10px] font-bold text-primary flex items-center gap-1">
+                          <span className="status-live-pulse" />
+                          Consultation In Progress
+                        </span>
+                      )}
                     </div>
 
-                    <div className="flex items-baseline gap-2">
-                      <h4 className="text-sm font-bold text-foreground">{apt.patientName}</h4>
+                    <div className="flex items-baseline gap-2 pt-0.5">
+                      <h4 className="text-base font-bold text-foreground">{apt.patientName}</h4>
                       <span className="text-xs text-muted-foreground">
                         ({apt.patientAge}y · {apt.patientGender}) · {apt.patientPhone}
                       </span>
                     </div>
 
-                    <p className="text-xs text-muted-foreground max-w-xl">
-                      <strong className="text-muted-foreground">Symptoms:</strong> {apt.chiefSymptoms}
+                    <p className="text-xs text-muted-foreground max-w-xl leading-relaxed">
+                      <strong className="text-foreground font-semibold">Chief Symptoms:</strong> {apt.chiefSymptoms}
                     </p>
                   </div>
 
@@ -245,9 +255,9 @@ export function DoctorPortal({ locale }: DoctorPortalProps) {
                       <Button
                         size="sm"
                         onClick={() => advanceStage(apt, 2)}
-                        className="bg-secondary hover:bg-slate-700 text-foreground text-xs h-8"
+                        className="rounded-xl text-xs h-9 px-3.5 bg-secondary hover:bg-white/10 text-foreground"
                       >
-                        <Check className="w-3.5 h-3.5 mr-1" /> Confirm Slot
+                        <Check className="w-3.5 h-3.5 mr-1 text-primary" /> Confirm Slot
                       </Button>
                     )}
 
@@ -256,9 +266,9 @@ export function DoctorPortal({ locale }: DoctorPortalProps) {
                       <Button
                         size="sm"
                         onClick={() => advanceStage(apt, 3)}
-                        className="bg-[oklch(0.82_0.12_85)] text-[oklch(0.18_0.03_75)] font-semibold"
+                        className="rounded-xl text-xs h-9 px-3.5 bg-gold text-black font-bold hover:bg-gold/90 shadow-md shadow-gold/20"
                       >
-                        Call Token
+                        Call Token #{apt.tokenNumber}
                       </Button>
                     )}
 
@@ -266,8 +276,9 @@ export function DoctorPortal({ locale }: DoctorPortalProps) {
                     {apt.stage >= 2 && apt.stage < 5 && (
                       <Button
                         size="sm"
+                        variant="shimmer"
                         onClick={() => handleStartWhatsAppCall(apt)}
-                        className="bg-primary text-primary-foreground font-semibold hover:bg-primary/90 text-xs h-8"
+                        className="rounded-xl text-xs h-9 px-3.5 font-bold"
                       >
                         <Phone className="w-3.5 h-3.5 mr-1.5" />
                         {isInCall ? "Open WhatsApp Call" : "Start WhatsApp Call"}
@@ -283,10 +294,10 @@ export function DoctorPortal({ locale }: DoctorPortalProps) {
                           setSelectedAppointment(apt);
                           setShowRxBuilder(true);
                         }}
-                        className={`text-xs h-8 ${
+                        className={`rounded-xl text-xs h-9 px-3.5 font-bold ${
                           isCompleted
-                            ? "border-primary/30 text-primary hover:bg-primary/10"
-                            : "bg-teal-600 hover:bg-teal-500 text-black font-bold"
+                            ? "border-primary/40 text-primary hover:bg-primary/10"
+                            : "bg-teal-500 hover:bg-teal-400 text-black shadow-lg shadow-teal-500/20"
                         }`}
                       >
                         <FileText className="w-3.5 h-3.5 mr-1" />
@@ -303,44 +314,77 @@ export function DoctorPortal({ locale }: DoctorPortalProps) {
 
       {/* QUICK PRESCRIPTION BUILDER MODAL */}
       <Dialog open={showRxBuilder} onOpenChange={setShowRxBuilder}>
-        <DialogContent className="border-border bg-card text-foreground sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="glass-card-premium border-white/15 text-foreground sm:max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 sm:p-8">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold flex items-center justify-between">
+            <DialogTitle className="text-lg font-bold font-display flex items-center justify-between">
               <span>Write Digital Prescription</span>
-              <span className="text-xs font-mono text-[oklch(0.82_0.12_85)]">{selectedAppointment?.referenceId}</span>
+              <span className="text-xs font-mono text-gold px-2.5 py-0.5 rounded-full bg-gold/10 border border-gold/25">
+                {selectedAppointment?.referenceId}
+              </span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Patient: {selectedAppointment?.patientName} ({selectedAppointment?.patientAge}y · {selectedAppointment?.patientGender})
+              Patient: <strong className="text-foreground">{selectedAppointment?.patientName}</strong> ({selectedAppointment?.patientAge}y · {selectedAppointment?.patientGender})
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
+          <div className="space-y-5 py-2">
+            {/* Common Remedies Quick Chips */}
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Quick Remedy Palette:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {COMMON_REMEDIES.slice(0, 8).map((rem) => (
+                  <button
+                    key={rem}
+                    type="button"
+                    onClick={() => {
+                      setMedicines((prev) => [
+                        ...prev,
+                        {
+                          id: `med-${Date.now()}-${rem}`,
+                          name: rem,
+                          potency: "200CH",
+                          form: "Sweet Globules (Sugar Pills)",
+                          dosage: DOSAGE_PRESETS[0] ?? "4 sweet globules dry on tongue, twice daily before meals",
+                          duration: "14 Days",
+                        },
+                      ]);
+                    }}
+                    className="text-[10px] font-medium px-2 py-1 rounded-lg bg-background/60 hover:bg-primary/15 hover:text-primary border border-border/60 transition"
+                  >
+                    + {rem}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Medicines List */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground font-bold">Homoeopathic Remedies & Globules Dosage</Label>
+                <Label className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
+                  Remedies & Globules Dosage
+                </Label>
                 <Button size="sm" variant="ghost" onClick={handleAddMedicine} className="text-xs text-primary h-7 px-2">
                   <Plus className="w-3.5 h-3.5 mr-1" /> Add Remedy
                 </Button>
               </div>
 
               {medicines.map((med, idx) => (
-                <div key={med.id} className="p-3 rounded-xl border border-border bg-secondary/70 space-y-2.5">
+                <div key={med.id} className="p-4 rounded-2xl border border-white/10 bg-background/60 space-y-3">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-muted-foreground">Remedy #{idx + 1}</span>
+                    <span className="font-bold text-foreground">Remedy #{idx + 1}</span>
                     {medicines.length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveMedicine(med.id)}
-                        className="text-red-400 hover:underline text-[11px]"
+                        className="text-destructive hover:underline text-[11px] font-medium"
                       >
                         Remove
                       </button>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    <div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="space-y-1">
                       <Label className="text-[11px] text-muted-foreground">Medicine Name</Label>
                       <Input
                         value={med.name}
@@ -349,10 +393,10 @@ export function DoctorPortal({ locale }: DoctorPortalProps) {
                           setMedicines((prev) => prev.map((m) => (m.id === med.id ? { ...m, name: val } : m)));
                         }}
                         placeholder="e.g. Arnica Montana"
-                        className="bg-secondary/80 border-border h-8 text-xs text-foreground"
+                        className="h-9 text-xs rounded-xl"
                       />
                     </div>
-                    <div>
+                    <div className="space-y-1">
                       <Label className="text-[11px] text-muted-foreground">Potency</Label>
                       <select
                         value={med.potency}
@@ -360,7 +404,7 @@ export function DoctorPortal({ locale }: DoctorPortalProps) {
                           const val = e.target.value;
                           setMedicines((prev) => prev.map((m) => (m.id === med.id ? { ...m, potency: val } : m)));
                         }}
-                        className="w-full bg-secondary/80 border border-border rounded-md text-foreground h-8 text-xs px-2"
+                        className="w-full bg-background/80 border border-border/80 rounded-xl text-foreground h-9 text-xs px-3 focus:outline-none focus:border-primary"
                       >
                         {POTENCIES.map((p) => (
                           <option key={p} value={p}>{p}</option>
@@ -369,7 +413,7 @@ export function DoctorPortal({ locale }: DoctorPortalProps) {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="space-y-1">
                     <Label className="text-[11px] text-muted-foreground">Dosage Instructions</Label>
                     <select
                       value={med.dosage}
@@ -377,7 +421,7 @@ export function DoctorPortal({ locale }: DoctorPortalProps) {
                         const val = e.target.value;
                         setMedicines((prev) => prev.map((m) => (m.id === med.id ? { ...m, dosage: val } : m)));
                       }}
-                      className="w-full bg-secondary/80 border border-border rounded-md text-foreground h-8 text-xs px-2 mb-1"
+                      className="w-full bg-background/80 border border-border/80 rounded-xl text-foreground h-9 text-xs px-3 focus:outline-none focus:border-primary"
                     >
                       {DOSAGE_PRESETS.map((d) => (
                         <option key={d} value={d}>{d}</option>
@@ -389,19 +433,21 @@ export function DoctorPortal({ locale }: DoctorPortalProps) {
             </div>
 
             {/* Doctor Advice / Notes */}
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Doctor Advice & Dietary Guidelines</Label>
               <Textarea
                 rows={2}
                 value={doctorAdvice}
                 onChange={(e) => setDoctorAdvice(e.target.value)}
-                className="bg-secondary/80 border-border text-foreground text-xs"
+                className="rounded-xl text-xs bg-background/60 border-border/80"
               />
             </div>
 
             <Button
               onClick={handleIssuePrescription}
-              className="w-full h-11 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-lg shadow-emerald-950 text-sm"
+              variant="shimmer"
+              size="lg"
+              className="w-full h-12 rounded-2xl font-bold shadow-lg shadow-primary/25 text-sm"
             >
               <CheckCircle2 className="w-4 h-4 mr-2" />
               Sign & Issue Digital Prescription (Stage 5)

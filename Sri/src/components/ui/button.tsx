@@ -23,6 +23,10 @@ const buttonVariants = cva(
           "bg-[oklch(0.82_0.12_85)] text-[oklch(0.18_0.03_75)] shadow-md shadow-[oklch(0.82_0.12_85)/0.25] hover:brightness-110 hover:shadow-lg",
         glass:
           "glass text-foreground hover:border-primary/30 hover:shadow-[0_0_20px_oklch(0.74_0.125_192/0.15)]",
+        shimmer:
+          "btn-shimmer bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.015]",
+        premium:
+          "btn-shimmer bg-gradient-to-r from-[oklch(0.84_0.13_88)] to-[oklch(0.76_0.14_70)] text-[oklch(0.18_0.03_75)] font-semibold shadow-lg shadow-[oklch(0.82_0.12_85)/0.3] hover:brightness-110 hover:scale-[1.015]",
       },
       size: {
         default: "h-10 px-5 py-2",

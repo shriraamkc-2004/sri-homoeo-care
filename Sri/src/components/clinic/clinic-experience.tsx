@@ -5,7 +5,7 @@ import {
   ArrowRight, CalendarDays, Check, CheckCircle2, ChevronDown,
   ClipboardCheck, Clock3, Download, HeartPulse, Languages, Laptop, LockKeyhole,
   LogOut, Menu, MessageCircle, NotebookPen, ShieldCheck, Smartphone, Sparkles, Stethoscope,
-  X,
+  X, Search, Copy, FileText, Pill, Truck, Activity,
 } from "lucide-react";
 import { AuthGate } from "./auth-gate";
 import { PatientPortal } from "./patient-portal";
@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import {
   getClinicStaffAppointments,
   updateClinicAppointmentAsStaff,
+  findPublicAppointmentStatus,
 } from "@/lib/clinic.functions";
 import { ClinicAuthContext, useClinicUser } from "@/lib/clinic-auth-context";
 import { formatIstTime } from "@/lib/clinic-booking";
@@ -557,10 +558,56 @@ function ClinicPage() {
     );
   }
 
+  const findAppointmentFn = useServerFn(findPublicAppointmentStatus);
+  const [trackRef, setTrackRef] = useState("");
+  const [trackingResult, setTrackingResult] = useState<any>(null);
+  const [isSearchingTrack, setIsSearchingTrack] = useState(false);
+
+  async function handleTrackSearch(e?: React.FormEvent, directRef?: string) {
+    if (e) e.preventDefault();
+    const clean = (directRef || trackRef).trim().toUpperCase();
+    if (!clean) {
+      toast.error(
+        locale === "ta"
+          ? "சந்திப்பு குறிப்பு எண்ணை உள்ளிடவும் (எ.கா. SHC-2026-8A41D2)"
+          : "Please enter your appointment reference ID (e.g. SHC-2026-8A41D2)"
+      );
+      return;
+    }
+    setIsSearchingTrack(true);
+    try {
+      const res = await findAppointmentFn({ data: { referenceId: clean } });
+      if (!res) {
+        toast.error(
+          locale === "ta"
+            ? "சந்திப்பு காணப்படவில்லை. குறிப்பு எண்ணை சரிபார்க்கவும்."
+            : "No active appointment found with that reference ID."
+        );
+        setTrackingResult(null);
+      } else {
+        setTrackingResult(res);
+        toast.success(
+          locale === "ta"
+            ? "சந்திப்பு விவரங்கள் வெற்றிகரமாக பெறப்பட்டன!"
+            : "Appointment details loaded successfully!"
+        );
+      }
+    } catch {
+      toast.error(
+        locale === "ta"
+          ? "சந்திப்பு நிலையைப் பெற முடியவில்லை. மீண்டும் முயற்சிக்கவும்."
+          : "Could not retrieve appointment status. Please try again."
+      );
+    } finally {
+      setIsSearchingTrack(false);
+    }
+  }
+
   const navItems = useMemo(
     () =>
       [
         ["features", t.features],
+        ["track", t.track],
         ["how", t.how],
         ["installation", t.installation],
         ["download", t.download],
@@ -662,41 +709,46 @@ function ClinicPage() {
   return (
     <main className="min-h-screen overflow-hidden bg-mesh-aurora text-foreground">
       {/* Sticky Top Header */}
-      <header className="sticky top-0 z-40 border-b border-border/50 bg-background/70 backdrop-blur-2xl">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-background/80 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.35)]">
         <div className="mx-auto flex min-h-[76px] max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
-          <a href="#top" aria-label="Sri Homoeo Care home" className="shrink-0">
+          <a href="#top" aria-label="Sri Homoeo Care home" className="shrink-0 group">
             <Brand />
           </a>
           <nav className="hidden items-center gap-7 lg:flex" aria-label="Main navigation">
             {navItems.map(([id, label]) => (
-              <a key={id} href={`#${id}`} className="text-sm text-muted-foreground transition-colors hover:text-primary relative after:absolute after:bottom-[-4px] after:left-0 after:h-px after:w-0 after:bg-primary after:transition-all hover:after:w-full">
+              <a
+                key={id}
+                href={`#${id}`}
+                className="text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-primary relative py-1 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:rounded-full after:bg-primary after:transition-all hover:after:w-full"
+              >
                 {label}
               </a>
             ))}
           </nav>
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="hidden items-center gap-2.5 md:flex">
             <button
               type="button"
               onClick={() => setLocale(locale === "en" ? "ta" : "en")}
-              className="flex h-9 items-center gap-1 rounded-xl px-3 text-xs text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+              className="flex h-9 items-center gap-1.5 rounded-xl border border-border/80 bg-secondary/50 px-3 text-xs font-semibold text-muted-foreground hover:bg-accent/60 hover:text-foreground transition-all duration-200"
               aria-label="Switch language"
             >
-              <Languages className="h-4 w-4" />
-              {locale === "en" ? "EN" : "தமிழ்"}
-              <ChevronDown className="h-3 w-3" />
+              <Languages className="h-4 w-4 text-primary" />
+              <span>{locale === "en" ? "EN" : "தமிழ்"}</span>
+              <ChevronDown className="h-3 w-3 opacity-60" />
             </button>
-            <Button size="sm" variant="outline" onClick={downloadApk}>
-              <Smartphone className="h-4 w-4 mr-1.5" />
+            <Button size="sm" variant="outline" onClick={downloadApk} className="rounded-xl border-border/80 hover:border-primary/40">
+              <Smartphone className="h-4 w-4 mr-1.5 text-primary" />
               Mobile APK
             </Button>
-            <Button size="sm" onClick={downloadLaptopApp}>
-              <Laptop className="h-4 w-4 mr-1.5" />
+            <Button size="sm" variant="glass" onClick={downloadLaptopApp} className="rounded-xl">
+              <Laptop className="h-4 w-4 mr-1.5 text-[oklch(0.82_0.12_85)]" />
               Laptop App
             </Button>
             <Button
               size="sm"
-              variant="gold"
+              variant="premium"
               onClick={() => setViewPortal(true)}
+              className="rounded-xl"
             >
               <Sparkles className="h-4 w-4 mr-1.5" />
               {clinicUser ? (
@@ -711,24 +763,27 @@ function ClinicPage() {
           </Button>
         </div>
         {mobileMenu && (
-          <div className="border-t border-border bg-card px-5 py-4 md:hidden">
-            <nav className="grid gap-3">
+          <div className="border-t border-border/80 bg-background/95 backdrop-blur-2xl px-5 py-5 md:hidden animate-fade-rise">
+            <nav className="grid gap-3.5">
               {navItems.map(([id, label]) => (
-                <a key={id} href={`#${id}`} onClick={() => setMobileMenu(false)} className="py-2 text-sm text-muted-foreground">
+                <a key={id} href={`#${id}`} onClick={() => setMobileMenu(false)} className="py-1.5 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                   {label}
                 </a>
               ))}
             </nav>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={() => setLocale(locale === "en" ? "ta" : "en")}>
-                {locale === "en" ? "தமிழ்" : "EN"}
-              </Button>
-              <Button size="sm" variant="outline" onClick={downloadApk}>
-                <Download className="h-4 w-4 mr-1.5" />
-                {t.download}
-              </Button>
-              <Button size="sm" className="w-full bg-primary text-primary-foreground" onClick={() => { setMobileMenu(false); setViewPortal(true); }}>
-                {locale === "ta" ? "கேர் போர்டல்" : "Care Portal / Sign In"}
+            <div className="mt-4 flex flex-col gap-2.5 pt-3 border-t border-border/60">
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" className="flex-1" onClick={() => setLocale(locale === "en" ? "ta" : "en")}>
+                  <Languages className="h-4 w-4 mr-1.5 text-primary" />
+                  {locale === "en" ? "தமிழ்" : "English"}
+                </Button>
+                <Button size="sm" variant="outline" className="flex-1" onClick={downloadApk}>
+                  <Smartphone className="h-4 w-4 mr-1.5" />
+                  {t.download}
+                </Button>
+              </div>
+              <Button size="sm" variant="shimmer" className="w-full" onClick={() => { setMobileMenu(false); setViewPortal(true); }}>
+                {locale === "ta" ? "கேர் போர்டல் / உள்நுழை" : "Care Portal / Sign In"}
               </Button>
             </div>
           </div>
@@ -736,66 +791,80 @@ function ClinicPage() {
       </header>
 
       {/* Hero Section */}
-      <section id="top" className="relative border-b border-border/40">
-        <div className="absolute inset-y-0 right-0 hidden w-[50%] bg-[radial-gradient(ellipse_at_center,oklch(0.45_0.1_192_/_0.2),transparent_70%)] lg:block" />
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/8 rounded-full blur-3xl pointer-events-none animate-float-slow" />
-        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1.05fr_.95fr] lg:gap-16 lg:py-28">
+      <section id="top" className="relative border-b border-border/40 overflow-hidden">
+        <div className="absolute inset-y-0 right-0 hidden w-[55%] bg-[radial-gradient(ellipse_at_center,oklch(0.45_0.1_192_/_0.22),transparent_70%)] lg:block" />
+        <div className="absolute top-20 left-10 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none animate-float-slow" />
+        <div className="absolute bottom-10 right-20 w-80 h-80 bg-[oklch(0.82_0.12_85)]/8 rounded-full blur-3xl pointer-events-none animate-float" />
+        
+        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1.1fr_.9fr] lg:gap-16 lg:py-24">
           <div className="max-w-2xl animate-fade-up">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1.5 text-xs text-primary backdrop-blur-sm">
-              <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              {t.apkBadge}
-            </div>
-            <p className="mt-8 text-sm font-medium tracking-wide text-primary/80 uppercase">{t.eyebrow}</p>
-            <h1 className="mt-4 font-display text-5xl font-semibold leading-[1.08] text-foreground sm:text-6xl lg:text-7xl">
-              {t.headlineA}<br /><span className="text-gradient-primary">{t.headlineB}</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground sm:text-lg">{t.intro}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button size="lg" onClick={downloadApk}>
-                <Smartphone className="h-4 w-4 mr-2" />
-                {t.downloadBtnText}
-              </Button>
-              <Button size="lg" variant="outline" onClick={downloadLaptopApp}>
-                <Laptop className="h-4 w-4 mr-2" />
-                {t.downloadLaptopBtnText}
-              </Button>
-              <Button size="lg" variant="gold" onClick={() => setViewPortal(true)}>
-                {t.book}
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </div>
-            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" />{t.inClinic}</span>
-              <span className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-[oklch(0.82_0.12_85)]" />{t.everyday}</span>
+            {/* Live Consultation Pulse Badge */}
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs text-primary backdrop-blur-md shadow-sm">
+              <span className="status-live-pulse" />
+              <span className="font-semibold text-foreground/90">{locale === "ta" ? "நேரடி ஆலோசனை · மாலை 6:00 – 8:00 IST" : "In-Clinic & Online Care · Daily 6:00 – 8:00 PM IST"}</span>
+              <span className="h-3 w-px bg-primary/30" />
+              <span className="text-gold font-mono hidden sm:inline">{t.apkBadge}</span>
             </div>
 
-            {/* App Stats Overview */}
-            <div className="mt-10 grid grid-cols-2 gap-4 border-t border-border/60 pt-6 sm:grid-cols-4">
-              <div>
-                <p className="font-display text-2xl font-bold text-foreground">{t.statInClinic}</p>
+            <p className="mt-8 text-xs font-bold tracking-widest text-primary uppercase">{t.eyebrow}</p>
+            <h1 className="mt-3 font-display text-5xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+              {t.headlineA}<br />
+              <span className="text-gradient-primary">{t.headlineB}</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">{t.intro}</p>
+            
+            {/* Action Buttons */}
+            <div className="mt-8 flex flex-wrap gap-3.5">
+              <Button size="xl" variant="shimmer" onClick={() => setViewPortal(true)} className="gap-2">
+                <Sparkles className="h-5 w-5" />
+                {t.book}
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+              <Button size="xl" variant="outline" onClick={downloadApk} className="border-border/80 hover:border-primary/50">
+                <Smartphone className="h-5 w-5 mr-2 text-primary" />
+                {t.downloadBtnText}
+              </Button>
+              <Button size="xl" variant="glass" onClick={downloadLaptopApp} className="hidden sm:inline-flex">
+                <Laptop className="h-5 w-5 mr-2 text-gold" />
+                {t.downloadLaptopBtnText}
+              </Button>
+            </div>
+
+            {/* Trust Highlights Row */}
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-muted-foreground">
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" />{t.inClinic}</span>
+              <span className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-gold" />{t.everyday}</span>
+              <span className="flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary" />Dr. Sriindhuja C · BHMS, MSc (Psychology)</span>
+            </div>
+
+            {/* 4 Bento Stat Cards */}
+            <div className="mt-10 grid grid-cols-2 gap-3.5 border-t border-border/60 pt-6 sm:grid-cols-4">
+              <div className="glass-card-premium p-4 rounded-2xl">
+                <p className="font-display text-2xl font-extrabold text-foreground">{t.statInClinic}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{t.statInClinicLabel}</p>
               </div>
-              <div>
-                <p className="font-display text-2xl font-bold text-primary">{t.statStages}</p>
+              <div className="glass-card-premium p-4 rounded-2xl">
+                <p className="font-display text-2xl font-extrabold text-primary">{t.statStages}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{t.statStagesLabel}</p>
               </div>
-              <div>
-                <p className="font-display text-2xl font-bold text-gold">{t.statApk}</p>
+              <div className="glass-card-premium p-4 rounded-2xl">
+                <p className="font-display text-2xl font-extrabold text-gold">{t.statApk}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{t.statApkLabel}</p>
               </div>
-              <div>
-                <p className="font-display text-2xl font-bold text-foreground">{t.statBilingual}</p>
+              <div className="glass-card-premium p-4 rounded-2xl">
+                <p className="font-display text-2xl font-extrabold text-foreground">{t.statBilingual}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{t.statBilingualLabel}</p>
               </div>
             </div>
 
+            {/* Doctor Branding Stamp */}
             <div className="mt-8 flex items-center gap-3.5 border-t border-border/60 pt-6">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gold/40 bg-white p-1 shadow-sm">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gold/40 bg-white p-1 shadow-sm glow-gold">
                 <img src="/sri-homeo-care-logo.png" alt="Sri Homoeo Care" className="h-full w-full object-contain" />
               </div>
               <div>
-                <p className="font-display text-sm font-bold text-foreground">Cure at the Core</p>
-                <p className="text-xs text-gold">Sri Homoeo Care</p>
+                <p className="font-display text-sm font-bold text-foreground">Cure at the Core · வேரிலிருந்து குணம்</p>
+                <p className="text-xs text-gold">Dr. Sriindhuja C · Reg. No: 5397 (Tirupattur)</p>
               </div>
               <span className="ml-2 h-px flex-1 bg-border/80" />
             </div>
@@ -804,32 +873,213 @@ function ClinicPage() {
         </div>
       </section>
 
-      {/* Expanded Features Section */}
+      {/* Interactive Public Appointment Tracker Section */}
+      <section id="track" className="border-b border-border/60 bg-card/25 py-16 sm:py-20">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="eyebrow">{t.track}</span>
+            <h2 className="section-title mt-2">{t.trackerHeading}</h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.trackerText}</p>
+          </div>
+
+          <div className="mt-8 mx-auto max-w-xl">
+            <form onSubmit={handleTrackSearch} className="flex flex-col sm:flex-row gap-2.5">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-muted-foreground" />
+                <Input
+                  value={trackRef}
+                  onChange={(e) => setTrackRef(e.target.value)}
+                  placeholder="Enter reference ID (e.g. SHC-2026-8A41D2)"
+                  className="pl-10 h-11 bg-background/80 border-border text-foreground font-mono text-sm focus-visible:ring-primary rounded-xl"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={isSearchingTrack}
+                variant="shimmer"
+                className="h-11 px-6 rounded-xl shrink-0"
+              >
+                {isSearchingTrack ? "Searching..." : t.search}
+              </Button>
+            </form>
+
+            <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground px-1">
+              <span>{locale === "ta" ? "மாதிரி குறிப்பு எண்:" : "Test sample reference:"}</span>
+              <button
+                type="button"
+                onClick={() => { setTrackRef("SHC-2026-8A41D2"); void handleTrackSearch(undefined, "SHC-2026-8A41D2"); }}
+                className="font-mono text-primary hover:underline font-semibold"
+              >
+                SHC-2026-8A41D2
+              </button>
+            </div>
+
+            {/* Tracking Result Card */}
+            {trackingResult && (
+              <div className="mt-6 p-6 rounded-2xl glass-card-premium border-primary/30 animate-fade-rise">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-4">
+                  <div>
+                    <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground">Appointment Reference</span>
+                    <p className="font-mono font-bold text-lg text-primary">{trackingResult.referenceId || trackRef}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground">Token Sequence</span>
+                    <p className="font-display font-extrabold text-2xl text-gold">#{trackingResult.tokenNumber || 1}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 py-4 text-xs">
+                  <div>
+                    <span className="text-muted-foreground block mb-1">Appointment Date:</span>
+                    <span className="font-medium text-foreground">{trackingResult.appointmentDate ? formatDate(trackingResult.appointmentDate, locale) : "Today"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block mb-1">Scheduled Time:</span>
+                    <span className="font-medium text-foreground">{trackingResult.appointmentTime ? formatIstTime(trackingResult.appointmentTime) : "6:30 PM IST"}</span>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-foreground">Current Live Stage</span>
+                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">
+                      {statusLabel(trackingResult.status || "requested", t)}
+                    </span>
+                  </div>
+                  <StatusSteps status={trackingResult.status || "requested"} t={t} />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Expanded Features Bento Grid Section */}
       <section id="features" className="mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:py-24">
         <div className="max-w-2xl">
-          <p className="text-sm font-medium tracking-wide text-primary/80 uppercase">{t.sectionTag}</p>
-          <h2 className="font-display mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{t.featureHeading}</h2>
+          <p className="text-xs font-bold tracking-widest text-primary uppercase">{t.sectionTag}</p>
+          <h2 className="font-display mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">{t.featureHeading}</h2>
         </div>
-        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3 perspective-1000">
-          {[
-            { icon: CalendarDays, title: t.bookFeature, body: t.bookText, num: "01" },
-            { icon: ShieldCheck, title: t.rxFeature, body: t.rxText, num: "02" },
-            { icon: HeartPulse, title: t.remindersFeature, body: t.remindersText, num: "03" },
-            { icon: Smartphone, title: t.appFeature, body: t.appText, num: "04" },
-            { icon: Clock3, title: t.queueFeature, body: t.queueText, num: "05" },
-            { icon: Stethoscope, title: t.holisticFeature, body: t.holisticText, num: "06" },
-          ].map(({ icon: Icon, title, body, num }, i) => (
-            <article key={title} className={`glass rounded-2xl p-6 card-3d animate-fade-up stagger-${(i % 6) + 1}`}>
-              <div className="flex items-center justify-between">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary">
-                  <Icon className="h-5 w-5" />
-                </span>
-                <span className="font-mono text-xs font-semibold text-[oklch(0.82_0.12_85)]">{num}</span>
+
+        {/* Asymmetric Bento Grid */}
+        <div className="mt-12 grid gap-6 md:grid-cols-3 perspective-1000">
+          {/* Bento Card 1: Large (Span-2) Holistic Root-Cause Care */}
+          <article className="glass-card-premium rounded-3xl p-8 card-3d md:col-span-2 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/15 transition-all duration-500" />
+            <div className="relative z-10 flex flex-col justify-between h-full space-y-6">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/30 bg-primary/15 text-primary">
+                    <Stethoscope className="h-6 w-6" />
+                  </span>
+                  <span className="font-mono text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                    Clinical Architecture · 01
+                  </span>
+                </div>
+                <h3 className="mt-6 font-display text-2xl font-bold text-foreground">{t.holisticFeature}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground max-w-xl">{t.holisticText}</p>
               </div>
-              <h3 className="mt-5 font-display text-lg font-semibold">{title}</h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{body}</p>
-            </article>
-          ))}
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-border/50 text-xs">
+                <div className="p-3 rounded-xl bg-background/50 border border-border/60">
+                  <span className="font-bold text-foreground block mb-1">Classical Homeopathy</span>
+                  <span className="text-muted-foreground text-[11px]">Hahnemannian principles targeting root miasmatic cause.</span>
+                </div>
+                <div className="p-3 rounded-xl bg-background/50 border border-border/60">
+                  <span className="font-bold text-primary block mb-1">Psychology Intake</span>
+                  <span className="text-muted-foreground text-[11px]">BHMS & MSc Psychology dual-discipline case taking.</span>
+                </div>
+                <div className="p-3 rounded-xl bg-background/50 border border-border/60">
+                  <span className="font-bold text-gold block mb-1">Zero Side-Effects</span>
+                  <span className="text-muted-foreground text-[11px]">Natural potencies safe for infants, adults, and seniors.</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          {/* Bento Card 2: 5-Stage Live Queue Tracker */}
+          <article className="glass-card-premium rounded-3xl p-8 card-3d md:col-span-1 flex flex-col justify-between relative overflow-hidden group">
+            <div className="absolute bottom-0 right-0 w-60 h-60 bg-[oklch(0.82_0.12_85)]/10 rounded-full blur-2xl pointer-events-none" />
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/30 bg-gold/15 text-gold">
+                  <Clock3 className="h-6 w-6" />
+                </span>
+                <span className="font-mono text-xs font-bold px-3 py-1 rounded-full bg-gold/10 text-gold border border-gold/20">
+                  Live Queue · 02
+                </span>
+              </div>
+              <h3 className="mt-6 font-display text-xl font-bold text-foreground">{t.queueFeature}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.queueText}</p>
+            </div>
+            <div className="mt-6 p-4 rounded-2xl bg-background/60 border border-border/60 text-center">
+              <span className="text-[10px] font-mono uppercase text-muted-foreground block">Active Sequence</span>
+              <p className="text-3xl font-extrabold text-gold my-1 font-display">#03 Serving</p>
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-primary">
+                <span className="status-live-pulse" />
+                Est. wait 10 mins
+              </span>
+            </div>
+          </article>
+
+          {/* Bento Card 3: Tamper-Proof Digital Prescriptions */}
+          <article className="glass-card-premium rounded-3xl p-8 card-3d md:col-span-1 flex flex-col justify-between relative overflow-hidden group">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/30 bg-primary/15 text-primary">
+                  <ShieldCheck className="h-6 w-6" />
+                </span>
+                <span className="font-mono text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                  Rx Vault · 03
+                </span>
+              </div>
+              <h3 className="mt-6 font-display text-xl font-bold text-foreground">{t.rxFeature}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.rxText}</p>
+            </div>
+            <div className="mt-6 p-3.5 rounded-2xl bg-background/60 border border-border/60 space-y-2 text-xs">
+              <div className="flex items-center justify-between text-foreground font-semibold">
+                <span>Safe Home Delivery</span>
+                <span className="text-primary font-mono text-[11px]">Courier Active</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-normal">
+                Medicated sweet globules securely packaged with diet precautions sheet.
+              </p>
+            </div>
+          </article>
+
+          {/* Bento Card 4: Multi-Platform Companion Suite (Span-2) */}
+          <article className="glass-card-premium rounded-3xl p-8 card-3d md:col-span-2 relative overflow-hidden group">
+            <div className="relative z-10 flex flex-col justify-between h-full space-y-6">
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/30 bg-primary/15 text-primary">
+                      <Smartphone className="h-6 w-6" />
+                    </span>
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/30 bg-gold/15 text-gold">
+                      <Laptop className="h-6 w-6" />
+                    </span>
+                  </div>
+                  <span className="font-mono text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                    Ecosystem · 04
+                  </span>
+                </div>
+                <h3 className="mt-6 font-display text-2xl font-bold text-foreground">{t.appFeature}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground max-w-xl">{t.appText}</p>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border/50">
+                <div className="flex flex-wrap gap-4 text-xs font-mono text-muted-foreground">
+                  <span className="px-3 py-1.5 rounded-lg bg-background/60 border border-border">📱 Android 8.0+ APK (16.9 MB)</span>
+                  <span className="px-3 py-1.5 rounded-lg bg-background/60 border border-border">💻 Windows 10/11 Standalone (.exe)</span>
+                </div>
+                <Button size="sm" variant="shimmer" onClick={downloadApk} className="rounded-xl">
+                  <Download className="h-4 w-4 mr-1.5" />
+                  {t.download}
+                </Button>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 

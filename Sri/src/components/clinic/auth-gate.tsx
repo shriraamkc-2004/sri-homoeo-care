@@ -10,6 +10,11 @@ import {
   Languages,
   Loader2,
   UserPlus,
+  Eye,
+  EyeOff,
+  Shield,
+  Stethoscope,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,12 +45,15 @@ export function AuthGate({ onAuthenticated, locale, onToggleLocale }: AuthGatePr
   // Sign in state
   const [loginIdentifier, setLoginIdentifier] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showStaffHints, setShowStaffHints] = useState(false);
 
   // Register state
   const [regName, setRegName] = useState("");
   const [regPhone, setRegPhone] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
+  const [showRegPassword, setShowRegPassword] = useState(false);
 
   // Handle direct password sign in with loader
   async function handlePasswordSignIn(e: React.FormEvent) {
@@ -206,7 +214,7 @@ export function AuthGate({ onAuthenticated, locale, onToggleLocale }: AuthGatePr
       <div className="absolute bottom-1/4 -right-24 w-96 h-96 bg-[oklch(0.82_0.12_85)]/8 rounded-full blur-3xl pointer-events-none animate-float" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
-      <Card className="relative z-10 w-full max-w-md liquid-glass p-6 sm:p-8 animate-pop-in depth-3 border-primary/25 shadow-2xl">
+      <Card className="relative z-10 w-full max-w-md glass-card-premium p-6 sm:p-8 animate-pop-in depth-3 border-primary/30 shadow-2xl rounded-3xl overflow-hidden">
         {/* Header & Logo */}
         <div className="flex items-center justify-between border-b border-border/50 pb-5 mb-6">
           <div className="flex items-center gap-3">
@@ -231,23 +239,24 @@ export function AuthGate({ onAuthenticated, locale, onToggleLocale }: AuthGatePr
         </div>
 
         {/* Doctor Credential Mini-Banner */}
-        <div className="rounded-xl glass-subtle px-3.5 py-2.5 mb-6 text-xs text-muted-foreground flex items-center justify-between">
+        <div className="rounded-xl glass-subtle px-3.5 py-2.5 mb-6 text-xs text-muted-foreground flex items-center justify-between border border-primary/20">
           <div>
             <span className="font-semibold text-primary">Dr. Sriindhuja C</span> · BHMS, MSc (Psychology)
             <div className="text-[11px] text-[oklch(0.82_0.12_85)]/90 font-mono">Reg. No: 5397 · Tirupattur, TN</div>
           </div>
-          <span className="text-[11px] px-2.5 py-1 rounded-full bg-primary/15 text-primary border border-primary/30 font-medium">
+          <span className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-primary/15 text-primary border border-primary/30 font-medium">
+            <span className="status-live-pulse" />
             6–8 PM IST
           </span>
         </div>
 
         {/* Main Sign In / Register Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "signin" | "register")}>
-          <TabsList className="grid grid-cols-2 bg-secondary/80 border border-border p-1 mb-6 rounded-xl">
-            <TabsTrigger value="signin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-semibold text-xs py-2">
+          <TabsList className="grid grid-cols-2 bg-secondary/80 border border-border/80 p-1 mb-6 rounded-2xl">
+            <TabsTrigger value="signin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg font-bold text-xs py-2.5 rounded-xl transition-all">
               {isTa ? "உள்நுழை (Sign In)" : "Sign In"}
             </TabsTrigger>
-            <TabsTrigger value="register" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-semibold text-xs py-2">
+            <TabsTrigger value="register" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg font-bold text-xs py-2.5 rounded-xl transition-all">
               {isTa ? "பதிவு செய் (Register)" : "Register"}
             </TabsTrigger>
           </TabsList>
@@ -285,19 +294,27 @@ export function AuthGate({ onAuthenticated, locale, onToggleLocale }: AuthGatePr
                   <Lock className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
                   <Input
                     id="pass"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="pl-9 bg-background/60 border-border text-foreground focus-visible:ring-primary h-10 text-sm"
+                    className="pl-9 pr-10 bg-background/60 border-border text-foreground focus-visible:ring-primary h-10 text-sm"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors p-0.5"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 
               <Button
                 type="submit"
                 disabled={isLoggingIn}
-                className="w-full h-11 bg-primary text-primary-foreground font-semibold shadow-md shadow-primary/20 hover:bg-primary/90"
+                className="w-full h-11 btn-shimmer bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.01] transition-all"
               >
                 {isLoggingIn ? (
                   <>
@@ -311,6 +328,49 @@ export function AuthGate({ onAuthenticated, locale, onToggleLocale }: AuthGatePr
                   </>
                 )}
               </Button>
+
+              {/* Staff Access Collapsible Hint */}
+              <div className="pt-2 border-t border-border/40 text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowStaffHints(!showStaffHints)}
+                  className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-primary transition-colors font-medium"
+                >
+                  <Shield className="w-3.5 h-3.5 text-primary" />
+                  <span>{isTa ? "பணியாளர் / மருத்துவர் விரைவு நுழைவு" : "Staff / Doctor Fast Portal Access"}</span>
+                </button>
+                {showStaffHints && (
+                  <div className="mt-2.5 p-2.5 rounded-xl bg-background/80 border border-primary/20 text-left text-[11px] space-y-1.5 animate-fade-rise">
+                    <p className="font-semibold text-primary">{isTa ? "களப்பணி கணக்குகள்:" : "Registered Clinic Accounts:"}</p>
+                    <div className="grid grid-cols-3 gap-1.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => { setLoginIdentifier("doctor@srihomoeoclinic.com"); setLoginPassword("srihomoeo123"); }}
+                        className="p-1.5 rounded-lg bg-accent/40 border border-primary/25 hover:bg-primary/20 text-center transition-colors"
+                      >
+                        <Stethoscope className="w-3.5 h-3.5 mx-auto text-primary mb-0.5" />
+                        <span className="font-bold block text-[10px]">Doctor</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setLoginIdentifier("admin@srihomoeoclinic.com"); setLoginPassword("srihomoeo123"); }}
+                        className="p-1.5 rounded-lg bg-accent/40 border border-primary/25 hover:bg-primary/20 text-center transition-colors"
+                      >
+                        <Shield className="w-3.5 h-3.5 mx-auto text-gold mb-0.5" />
+                        <span className="font-bold block text-[10px]">Admin</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setLoginIdentifier("member@srihomoeoclinic.com"); setLoginPassword("srihomoeo123"); }}
+                        className="p-1.5 rounded-lg bg-accent/40 border border-primary/25 hover:bg-primary/20 text-center transition-colors"
+                      >
+                        <User className="w-3.5 h-3.5 mx-auto text-primary mb-0.5" />
+                        <span className="font-bold block text-[10px]">Desk</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </form>
           </TabsContent>
 
@@ -377,14 +437,22 @@ export function AuthGate({ onAuthenticated, locale, onToggleLocale }: AuthGatePr
                   <Lock className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
                   <Input
                     id="regpass"
-                    type="password"
+                    type={showRegPassword ? "text" : "password"}
                     required
                     minLength={6}
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="pl-9 bg-background/60 border-border text-foreground focus-visible:ring-primary h-9 text-sm"
+                    className="pl-9 pr-10 bg-background/60 border-border text-foreground focus-visible:ring-primary h-9 text-sm"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegPassword(!showRegPassword)}
+                    className="absolute right-3 top-2 text-muted-foreground hover:text-foreground transition-colors p-0.5"
+                    aria-label={showRegPassword ? "Hide password" : "Show password"}
+                  >
+                    {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -392,7 +460,7 @@ export function AuthGate({ onAuthenticated, locale, onToggleLocale }: AuthGatePr
                 type="submit"
                 size="lg"
                 disabled={isRegistering}
-                className="w-full mt-3 font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:bg-primary/90 h-11"
+                className="w-full mt-3 font-semibold btn-shimmer bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.01] transition-all h-11"
               >
                 {isRegistering ? (
                   <>

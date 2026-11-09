@@ -43,4 +43,5 @@ Thumbs.db
 # Temporary testing / scratch
 temp_chrome/
 .playwright-mcp/
+.agents/
 *.tmp
